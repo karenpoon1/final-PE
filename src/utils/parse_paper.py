@@ -4,28 +4,28 @@ from typing import List, Tuple
 def parse_paper(paper: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
     if paper == 'old':
         exam_df, meta_df = parse_csv(
-            "data/9to1_2017_GCSE_1H.csv",
+            "src/data/9to1_2017_GCSE_1H.csv",
             data_row_start=23,
             meta_rows=5,
             paper_columns=['Name'] + [f'q{i}' for i in range(1, 25)])
 
     elif paper == 'new1':
         exam_df, meta_df = parse_csv(
-            "data/9to1_2017_GCSE_1H_and_2H_and_3H Linked Pinpoint Data_Cleaned.csv",
+            "src/data/9to1_2017_GCSE_1H_and_2H_and_3H Linked Pinpoint Data_Cleaned.csv",
             data_row_start=6,
             meta_rows=5,
             paper_columns=['Name'] + [f'q{i}' for i in range(1, 25)])
 
     elif paper == 'new2':
         exam_df, meta_df = parse_csv(
-            "data/9to1_2017_GCSE_1H_and_2H_and_3H Linked Pinpoint Data_Cleaned.csv",
+            "src/data/9to1_2017_GCSE_1H_and_2H_and_3H Linked Pinpoint Data_Cleaned.csv",
             data_row_start=6,
             meta_rows=5,
             paper_columns=['Name.1'] + [f'q{i}.1' for i in range(1, 24)])
 
     elif paper == 'new3':
         exam_df, meta_df = parse_csv(
-            "data/9to1_2017_GCSE_1H_and_2H_and_3H Linked Pinpoint Data_Cleaned.csv",
+            "src/data/9to1_2017_GCSE_1H_and_2H_and_3H Linked Pinpoint Data_Cleaned.csv",
             data_row_start=6,
             meta_rows=5,
             paper_columns=['Name.2'] + [f'q{i}.2' for i in range(1, 24)])

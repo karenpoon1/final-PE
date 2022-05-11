@@ -1,8 +1,8 @@
 import pandas as pd
 
-from df_utils.threshold_df import threshold_df
-from df_utils.binarise_df import binarise_df
-from df_utils.reset_index_df import reset_col_index, reset_row_index
+from utils.df_utils.threshold_df import threshold_df
+from utils.df_utils.binarise_df import binarise_df
+from utils.df_utils.reset_index_df import reset_col_index, reset_row_index
 
 
 def preprocess_data(data_df: pd.DataFrame, meta_df: pd.DataFrame):

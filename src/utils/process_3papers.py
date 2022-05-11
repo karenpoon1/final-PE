@@ -1,6 +1,6 @@
-from df_utils.combine_df import combine_df
-from parse_paper import parse_paper
-from preprocess_data import preprocess_data
+from utils.df_utils.combine_df import combine_df
+from utils.parse_paper import parse_paper
+from utils.preprocess_data import preprocess_data
 
 
 def process_3papers():
@@ -16,5 +16,3 @@ def process_3papers():
     processed_df, processed_meta_df = preprocess_data(combined_exam_df, combined_meta_df)
 
     return processed_df, processed_meta_df
-
-process_3papers()

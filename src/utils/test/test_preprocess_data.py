@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 
-from preprocess_data import preprocess_data
+from ..preprocess_data import preprocess_data
 
 class TestPreprocessData(unittest.TestCase):
     def test_preprocess_data(self):
@@ -17,18 +17,16 @@ class TestPreprocessData(unittest.TestCase):
             [5.0, 2.0, 2.0, 0.0]
         ]
         data_df = pd.DataFrame(data, columns=['q1', 'q2', 'q3', 'q4'])
-        
-        max_scores_data = {'q1':5.0, 'q2':2.0, 'q3':3.0, 'q4':3.0}
-        max_scores_df = pd.Series(data=max_scores_data, index=['q1', 'q2', 'q3', 'q4'])
+        data_df.set_index(pd.Series([2,3,4,5,6]), inplace=True) # set row index
 
         meta_data = np.array([
             [5.0, 2.0, 3.0, 3.0],
-            ['Scattergraphs and Reasoning', 'Product of Prime Factors', 'Decimal Multiplication', 'Double Brackets Problem Solving'],
+            ['A', 'B', 'C', 'D'],
             [1, 1, 1, 3],
             [171, 52, 200, 183]
         ])
         meta_df = pd.DataFrame(data=meta_data, columns=['q1', 'q2', 'q3', 'q4'])
-        print(meta_df)
+        meta_df.set_index(pd.Index(['Max', 'Topics', 'Difficulty', 'qtype']), inplace=True)
         
         processed_df, processed_meta_df = preprocess_data(data_df, meta_df)
 
@@ -40,9 +38,19 @@ class TestPreprocessData(unittest.TestCase):
             [1.0, 1.0, 0.0, 1.0],
             [1.0, 1.0, 1.0, 0.0]
         ]
-        true_df = pd.DataFrame(true_data, columns=['q1', 'q2', 'q3', 'q4'])
+        true_df = pd.DataFrame(true_data, columns=[0, 1, 2, 3])
 
-        self.assertTrue(bin_df.equals(true_df))
+        true_meta_data = np.array([
+            [5.0, 2.0, 3.0, 3.0],
+            ['A', 'B', 'C', 'D'],
+            [1, 1, 1, 3],
+            [171, 52, 200, 183]
+        ])
+        true_meta_df = pd.DataFrame(data=true_meta_data, columns=[0, 1, 2, 3])
+        true_meta_df.set_index(pd.Index(['Max', 'Topics', 'Difficulty', 'qtype']), inplace=True)
+
+        self.assertTrue(processed_df.equals(true_df))
+        self.assertTrue(processed_meta_df.equals(true_meta_df))
 
 
 if __name__ == '__main__':

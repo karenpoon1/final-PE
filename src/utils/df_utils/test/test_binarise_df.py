@@ -1,8 +1,7 @@
 import unittest
 import pandas as pd
 
-# from src.utils.df_utils.binarise_df import binarise_df
-from ..binarise_df import binarise_df
+from utils.df_utils.binarise_df import binarise_df
 
 class TestBinariseDf(unittest.TestCase):
     def test_binarise_df_1(self):

@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from ..combine_df import combine_df
+from utils.df_utils.combine_df import combine_df
 
 
 class TestCombineDf(unittest.TestCase):

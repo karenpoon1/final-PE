@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 
-from ..preprocess_data import preprocess_data
+from utils.preprocess_data import preprocess_data
 
 class TestPreprocessData(unittest.TestCase):
     def test_preprocess_data(self):

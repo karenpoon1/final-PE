@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from ..threshold_df import threshold_df
+from utils.df_utils.threshold_df import threshold_df
 
 
 class TestThresholdDf(unittest.TestCase):

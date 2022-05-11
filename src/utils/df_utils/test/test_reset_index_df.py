@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 
-from ..reset_index_df import reset_row_index, reset_col_index
+from utils.df_utils.reset_index_df import reset_row_index, reset_col_index
 
 
 class TestResetIndexDf(unittest.TestCase):

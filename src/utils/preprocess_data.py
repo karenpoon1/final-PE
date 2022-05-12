@@ -15,8 +15,3 @@ def preprocess_data(data_df: pd.DataFrame, meta_df: pd.DataFrame):
 
     processed_meta_df = reset_col_index(meta_df)
     return processed_df.copy(), processed_meta_df.copy()
-
-
-# def remove_incomplete_rows(data_df: pd.DataFrame) -> pd.DataFrame:
-#     '''drop rows with nan values, index retained'''
-#     return data_df.dropna(axis=0, how='any')

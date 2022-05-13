@@ -10,7 +10,7 @@ def split_train_test(data_df, split_params):
     
     if split_params['random_q_order']:
         data_df = shuffle_cols(data_df, shuffle_seed=seed, reset_index=True) # shuffle question order
-
+    
     if split_params['random_s_order']:
         data_df = shuffle_rows(data_df, shuffle_seed=seed, reset_index=True) # shuffle student order
 

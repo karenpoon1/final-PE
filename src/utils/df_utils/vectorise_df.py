@@ -1,5 +1,4 @@
 import torch
-import random
 import pandas as pd
 
 from utils.df_utils.tensorise_df import tensorise_df

@@ -26,12 +26,14 @@ class AbilityDifficulty(IterativeModel):
         last_epoch = iters
         prev_nll = 0
         for epoch in range(iters):
-            train_nll = self.calc_nll(train_ts, bs, bq)
+            params = {'bs': bs, 'bq': bq}
+
+            train_nll = self.calc_nll(train_ts, params)
             train_nll.backward()
             
             if epoch % step_size == 0:
-                val_nll = self.calc_nll(val_ts, bs, bq)
-                test_nll = self.calc_nll(test_ts, bs, bq)
+                val_nll = self.calc_nll(val_ts, params)
+                test_nll = self.calc_nll(test_ts, params)
 
                 # terminate at last iteration if test nll of this iter greater than test nll of last iter
                 if epoch != 0 and test_nll > prev_nll:
@@ -41,7 +43,6 @@ class AbilityDifficulty(IterativeModel):
                 val_nll_arr[epoch//step_size] = val_nll
                 test_nll_arr[epoch//step_size] = test_nll
         
-                params = {'bs': bs, 'bq': bq}
                 train_acc = calc_acc(train_ts[0], self.predict(train_ts, params)[1])
                 val_acc = calc_acc(val_ts[0], self.predict(val_ts, params)[1])
                 test_acc = calc_acc(test_ts[0], self.predict(test_ts, params)[1])
@@ -49,7 +50,6 @@ class AbilityDifficulty(IterativeModel):
 
                 self.print_iter_res(epoch, train_nll, val_nll, test_nll, train_acc, val_acc, test_acc)
 
-            
             # Gradient descent
             with torch.no_grad():
                 bs -= rate * bs.grad
@@ -79,17 +79,13 @@ class AbilityDifficulty(IterativeModel):
         return probit_correct
 
 
-    def calc_nll(self, data_ts, bs, bq):
-        self.calc_probit
+    def calc_nll(self, data_ts, params):
+        probit_correct = self.calc_probit(data_ts, params)
         nll = -torch.sum(data_ts[0]*torch.log(probit_correct) + (1-data_ts[0])*torch.log(1-probit_correct))
         return nll
 
 
     def predict(self, data_ts, params):
-        bs_test = torch.index_select(params['bs'], 0, data_ts[1])
-        bq_test = torch.index_select(params['bq'], 0, data_ts[2])
-
-        predicted_probit = torch.sigmoid(bs_test + bq_test)
-        predictions = (predicted_probit>=0.5).float()
-
-        return predicted_probit, predictions
+        probit_correct = self.calc_probit(data_ts, params)
+        predictions = (probit_correct>=0.5).float()
+        return probit_correct, predictions

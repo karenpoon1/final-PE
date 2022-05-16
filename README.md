@@ -35,3 +35,9 @@
 #### Find test: 
 `python3 -m unittest utils.ts_utils.test.test_`
 <br>
+
+
+### Virtual environment
+`python3 -m venv .venv`
+`pip3 freeze > requirements.txt`
+`pip3 install -r requirements.txt`

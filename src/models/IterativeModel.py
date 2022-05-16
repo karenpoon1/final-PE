@@ -11,13 +11,13 @@ class IterativeModel:
         self.model_params = model_params
 
 
-    def run(self, train_ts, test_ts, val_ts, data_df, meta_df, save=False, plot=False, step_size=25):
+    def run(self, train_ts, test_ts, val_ts, data_df, meta_df, save=False, plot=False, init=None, step_size=25):
         
         seed, rate, iters = self.model_params['seed'], self.model_params['rate'], self.model_params['iters']
         self.rng.manual_seed(seed)
         
         S, Q = data_df.shape[0], data_df.shape[1] # student param dimension; question param dimension
-        params, history, last_epoch = self.train(train_ts, val_ts, test_ts, S, Q, rate, iters, step_size)
+        params, history, last_epoch = self.train(train_ts, val_ts, test_ts, S, Q, rate, iters, init, step_size)
 
         probabilities, predictions = self.predict(test_ts, params)
         performance = self.calc_performance(test_ts, predictions)

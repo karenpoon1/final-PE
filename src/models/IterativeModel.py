@@ -59,18 +59,20 @@ class IterativeModel:
 
 
     def plot(self, history, iters, step_size, plot):
+        fig = plt.figure()
         plt.plot(range(iters), history['avg train nll'])
         plt.plot(np.arange(0, iters, step_size), history['avg test nll'])
         plt.plot(np.arange(0, iters, step_size), history['avg val nll'])
         plt.plot(np.arange(0, iters, step_size), history['train acc']/100)
         plt.plot(np.arange(0, iters, step_size), history['test acc']/100)
         plt.plot(np.arange(0, iters, step_size), history['val acc']/100)
-        plt.title('nll and acc')
+        # plt.title('nll and acc')
         plt.xlabel('epoch')
         plt.legend(['Train nll', 'Test nll', 'Validation nll', 'Train acc', 'Test acc', 'Val acc'])
         # plt.legend(['Train nll', 'Validation nll', 'Train acc', 'Val acc'])
+        fig.savefig(plot)
         plt.show()
-        plt.savefig(plot)
+        plt.close()
 
 
     def print_iter_res(self, epoch, train_nll, val_nll, test_nll, train_acc, val_acc, test_acc):

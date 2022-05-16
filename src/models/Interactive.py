@@ -1,7 +1,6 @@
 import torch
 import math
 import numpy as np
-import matplotlib.pyplot as plt
 
 from models.IterativeModel import IterativeModel
 from utils.metric_utils.calc_metric import calc_acc
@@ -12,30 +11,35 @@ class Interactive(IterativeModel):
         self.dimension = model_params['dimension']
 
 
-    def train(self, train_ts, val_ts, test_ts, S, Q, rate, iters, step_size):
+    def train(self, train_ts, val_ts, test_ts, S, Q, rate, iters, init, step_size):
         acc_arr_size = math.ceil(iters/step_size)
         train_nll_arr, val_nll_arr, test_nll_arr = np.zeros(iters), np.zeros(acc_arr_size), np.zeros(acc_arr_size)
         train_acc_arr, val_acc_arr, test_acc_arr = np.zeros(acc_arr_size), np.zeros(acc_arr_size), np.zeros(acc_arr_size)
 
-        # Randomly initialise random student, question parameters
-        bs = torch.randn(S, requires_grad=True, generator=self.rng, dtype=torch.float32)
-        bq = torch.randn(Q, requires_grad=True, generator=self.rng, dtype=torch.float32)
-        xs = torch.normal(mean=0, std=np.sqrt(0.1), size=(S, self.dimension), requires_grad=True, generator=self.rng)
-        xq = torch.normal(mean=0, std=np.sqrt(0.1), size=(Q, self.dimension), requires_grad=True, generator=self.rng)
+        if not init:
+            # Randomly initialise random student, question parameters
+            bs = torch.randn(S, requires_grad=True, generator=self.rng, dtype=torch.float32) # default
+            bq = torch.randn(Q, requires_grad=True, generator=self.rng, dtype=torch.float32) # default
 
-        # bs = torch.zeros(S, requires_grad=True)
-        # bq = torch.zeros(Q, requires_grad=True)
-        # xs = torch.zeros(size=(S, self.dimension), requires_grad=True)
+        else:    
+            bs, bq = init['bs'], init['bq']
+        
+        xs = torch.normal(mean=0, std=np.sqrt(0.1), size=(S, self.dimension), requires_grad=True, generator=self.rng) # default
+        xq = torch.normal(mean=0, std=np.sqrt(0.1), size=(Q, self.dimension), requires_grad=True, generator=self.rng) # default
+
+        # xs = torch.ones(size=(S, self.dimension)) * 1
+        # xs.requires_grad = True
         # xq = torch.zeros(size=(Q, self.dimension), requires_grad=True)
 
         last_epoch = iters
         prev_val = 0
+
         for epoch in range(iters):
             params = {'bs': bs, 'bq': bq, 'xs': xs, 'xq': xq}
             train_nll = self.calc_nll(train_ts, params)
             train_nll.backward()
             
-            if epoch % step_size == 0:
+            if epoch % step_size == 0:   
                 val_nll = self.calc_nll(val_ts, params)
                 test_nll = self.calc_nll(test_ts, params)
 
@@ -85,8 +89,7 @@ class Interactive(IterativeModel):
         bq_data = torch.index_select(params['bq'], 0, data_ts[2])
         xs_data = torch.index_select(params['xs'], 0, data_ts[1])
         xq_data = torch.index_select(params['xq'], 0, data_ts[2])
-        
-        # xs_data = torch.exp(xs_data)
+
         # xq_data = torch.exp(xq_data)
         
         interactive_term = torch.sum(xs_data * xq_data, 1) # dot product between xs and xq

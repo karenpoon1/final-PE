@@ -14,6 +14,7 @@ def shuffle_rows(df, shuffle_seed=1000, reset_index=True):
 def shuffle_cols(df, shuffle_seed=1000, reset_index=True):
     shuffled_df = df.copy()
     shuffled_df = shuffled_df.sample(frac=1, axis=1, random_state=np.random.RandomState(shuffle_seed))
+    orig_col_order = shuffled_df.columns
     if reset_index:
         shuffled_df = reset_col_index(shuffled_df)
-    return shuffled_df
+    return shuffled_df, orig_col_order

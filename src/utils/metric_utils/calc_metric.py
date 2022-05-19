@@ -21,6 +21,10 @@ def calc_conf_matrix(data_ts: torch.Tensor, predictions: torch.Tensor):
     conf_matrix = conf_matrix*100/torch.numel(data_ts)
     return conf_matrix.round(3).tolist()
 
+def calc_RMSE(true, predictions):
+    error = true - predictions
+    return torch.sqrt(torch.sum(torch.square(error))/torch.numel(error))
+
 def calc_q_acc(data_ts, predictions, q_id_ts):
     acc_dict = {}
     unique_q = torch.unique(q_id_ts) # return tensor of unique question id

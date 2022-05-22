@@ -1,6 +1,7 @@
 import torch
 import math
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 from torch.nn.functional import normalize
@@ -32,7 +33,7 @@ class M2PL(IterativeModel):
             train_nll.backward()
             
             if epoch % step_size == 0:
-                print(epoch, bs)
+                print(epoch, bs[:10])
                 print(epoch, bq[:10])
             
                 val_nll = self.calc_nll(val_ts, params)
@@ -95,6 +96,15 @@ class M2PL(IterativeModel):
     def calc_nll(self, data_ts, params, l=0):
         probit_correct = self.calc_probit(data_ts, params)
         nll = -torch.sum(torch.log(probit_correct**data_ts[0]) + torch.log((1-probit_correct)**(1-data_ts[0])))
+        
+        if self.dimension > 0:
+            # Regularise bq
+            # xs = params['bs'][:, 1:]
+            xq = params['bq'][:, 1:]
+            xq_norm = torch.norm(xq, dim=1)
+            penalty = torch.sum(torch.square(xq_norm))
+            nll += (l * penalty)
+        
         return nll
 
 
@@ -102,3 +112,41 @@ class M2PL(IterativeModel):
         probit_correct = self.calc_probit(data_ts, params)
         predictions = (probit_correct>=0.5).float()
         return probit_correct, predictions
+
+
+    def synthesise(self, synthetic_params, save=False):
+        dimension = synthetic_params['dimension']
+        S, Q = synthetic_params['student_dimension'], synthetic_params['question_dimension']
+        self.rng.manual_seed(synthetic_params['seed'])
+        bs_mean, bs_std = synthetic_params['bs_mean'], synthetic_params['bs_std']
+        bq_mean, bq_std = synthetic_params['bq_mean'], synthetic_params['bq_std']
+
+        bs = torch.normal(mean=bs_mean, std=bs_std, size=(S, 1), requires_grad=True, generator=self.rng)
+        bq = torch.normal(mean=bq_mean, std=bq_std, size=(Q, 1), requires_grad=True, generator=self.rng)
+
+        bs0 = bs[:, 0]
+        bq0 = bq[:, 0]
+        bs0_matrix = bs0.repeat(Q, 1).T
+        bq0_matrix = bq0.repeat(S, 1)
+
+        if dimension == 0:
+            probit_correct = torch.sigmoid(bs0_matrix + bq0_matrix)
+        else:
+            xs_mean, xs_std = synthetic_params['xs_mean'], synthetic_params['xs_std']
+            xq_mean, xq_std = synthetic_params['xq_mean'], synthetic_params['xq_std']
+            xs = torch.normal(mean=xs_mean, std=xs_std, size=(S, dimension), requires_grad=True, generator=self.rng)
+            xq = torch.normal(mean=xq_mean, std=xq_std, size=(Q, dimension), requires_grad=True, generator=self.rng)
+            interactive_matrix = torch.matmul(xs, xq.T)
+            probit_correct = torch.sigmoid(bs0_matrix + bq0_matrix + interactive_matrix)
+            bs = torch.concat([bs, xs], dim=1)
+            bq = torch.concat([bq, xq], dim=1)
+        
+        self.rng.manual_seed(synthetic_params['seed']+1000)
+        synthetic_data = torch.bernoulli(probit_correct, generator=self.rng)
+        synthetic_df = pd.DataFrame(synthetic_data).astype(float)
+        ground_truth_params = {'bs': bs, 'bq': bq}
+
+        if save:
+            torch.save({'synthetic_df': synthetic_df, 'ground_truth_params': ground_truth_params}, save)
+
+        return synthetic_df, ground_truth_params

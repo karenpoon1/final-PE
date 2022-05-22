@@ -18,8 +18,17 @@ def calc_conf_matrix(data_ts: torch.Tensor, predictions: torch.Tensor):
           1|  F0      T1
     '''
     conf_matrix = confusion_matrix(data_ts.numpy(), predictions.detach().numpy())
+    print(conf_matrix)
     conf_matrix = conf_matrix*100/torch.numel(data_ts)
     return conf_matrix.round(3).tolist()
+
+def precision_recall(data_ts: torch.Tensor, predictions: torch.Tensor):
+    conf_matrix = confusion_matrix(data_ts.numpy(), predictions.detach().numpy())
+    T0, F1 = conf_matrix[0][0], conf_matrix[0][1]
+    F0, T1 = conf_matrix[1][0], conf_matrix[1][1]
+    precision = T1/(T1 + F1)
+    recall = T1/(T1 + F0)
+    return precision*100, recall*100
 
 def calc_RMSE(true, predictions):
     error = true - predictions

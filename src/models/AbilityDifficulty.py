@@ -12,7 +12,7 @@ class AbilityDifficulty(IterativeModel):
         super().__init__(model_params)
 
 
-    def train(self, train_ts, val_ts, test_ts, S, Q, rate, iters, step_size):
+    def train(self, train_ts, val_ts, test_ts, S, Q, rate, iters, init, step_size):
         acc_arr_size = math.ceil(iters/step_size)
         train_nll_arr, val_nll_arr, test_nll_arr = np.zeros(iters), np.zeros(acc_arr_size), np.zeros(acc_arr_size)
         train_acc_arr, val_acc_arr, test_acc_arr = np.zeros(acc_arr_size), np.zeros(acc_arr_size), np.zeros(acc_arr_size)

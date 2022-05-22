@@ -9,10 +9,10 @@ def split_train_test(data_df, split_params):
     seed = split_params['seed']
     
     if split_params['random_q_order']:
-        data_df, _ = shuffle_cols(data_df, shuffle_seed=seed, reset_index=True) # shuffle question order
+        data_df = shuffle_cols(data_df, shuffle_seed=seed, reset_index=False) # shuffle question order
     
     if split_params['random_s_order']:
-        data_df = shuffle_rows(data_df, shuffle_seed=seed, reset_index=True) # shuffle student order
+        data_df = shuffle_rows(data_df, shuffle_seed=seed, reset_index=False) # shuffle student order
 
     # Separate out questions to be involved in test set as 'selected_df'
     test_q_params = split_params['test_q_params']
@@ -55,6 +55,7 @@ def split_test_questions(data_df, q_range, specific):
     else:
         test_specific_questions = list(range(0, data_df.shape[1]))
         
-    selected_df = data_df[test_specific_questions]
+    # selected_df = data_df[test_specific_questions]
+    selected_df = data_df.iloc[:, test_specific_questions]
     remaining_df = data_df.drop(columns=test_specific_questions)
     return selected_df, remaining_df

@@ -22,8 +22,7 @@ def calc_conf_matrix(data_ts: torch.Tensor, predictions: torch.Tensor):
     conf_matrix = conf_matrix*100/torch.numel(data_ts)
     return conf_matrix.round(3).tolist()
 
-def precision_recall(data_ts: torch.Tensor, predictions: torch.Tensor):
-    conf_matrix = confusion_matrix(data_ts.numpy(), predictions.detach().numpy())
+def precision_recall(conf_matrix):
     T0, F1 = conf_matrix[0][0], conf_matrix[0][1]
     F0, T1 = conf_matrix[1][0], conf_matrix[1][1]
     precision = T1/(T1 + F1)
@@ -32,6 +31,7 @@ def precision_recall(data_ts: torch.Tensor, predictions: torch.Tensor):
 
 def calc_RMSE(true, predictions):
     error = true - predictions
+    print(torch.sum(torch.abs(error))/torch.numel(error))
     return torch.sqrt(torch.sum(torch.square(error))/torch.numel(error))
 
 def calc_q_acc(data_ts, predictions, q_id_ts):

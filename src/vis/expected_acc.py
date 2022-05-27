@@ -3,12 +3,12 @@ from scipy.integrate import quad
 from scipy.stats import norm
 
 def f_theta(theta):
-    mean, var = 0, 1
-    return norm.pdf(theta, loc=mean, scale=var)
+    mean, std = 0, 1
+    return norm.pdf(theta, loc=mean, scale=std)
 
 def f_delta(theta, p):
-    mean, var = 0, 3
-    return norm.pdf((theta + np.log((1-p)/p)), loc=mean, scale=var)
+    mean, std = -3, 1
+    return norm.pdf((theta + np.log((1-p)/p)), loc=mean, scale=std)
 
 def inner_integrand(theta, p):
     return f_theta(theta) * f_delta(theta, p)

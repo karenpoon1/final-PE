@@ -3,7 +3,7 @@ import torch
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utils.metric_utils.calc_metric import calc_acc, calc_conf_matrix, calc_q_acc
+from utils.metric_utils.calc_metric import calc_acc, calc_conf_matrix, calc_q_acc, calc_RMSE
 
 class IterativeModel:
     def __init__(self, model_params) -> None:
@@ -11,8 +11,9 @@ class IterativeModel:
         self.model_params = model_params
 
 
-    def run(self, train_ts, test_ts, val_ts, data_df, meta_df, save=False, plot=False, init=None, step_size=25):
+    def run(self, train_ts, test_ts, val_ts, data_df, meta_df, save=False, plot=False, init=None, step_size=5):
         
+        self.meta = meta_df
         seed, rate, iters = self.model_params['seed'], self.model_params['rate'], self.model_params['iters']
         self.rng.manual_seed(seed)
         
@@ -20,11 +21,12 @@ class IterativeModel:
         params, history, last_epoch = self.train(train_ts, val_ts, test_ts, S, Q, rate, iters, init, step_size)
 
         probabilities, predictions = self.predict(test_ts, params)
-        performance = self.calc_performance(test_ts, predictions)
+        performance = self.calc_performance(test_ts, predictions, probabilities)
         correctness_ts = self.get_correctness(test_ts, predictions)
 
         results = {'res': performance, 'hyperparams': {'seed': seed, 'rate': rate, 'iters': last_epoch},
-                            'params': params, 'history': history, 'correctness': correctness_ts, 'probit': probabilities, 'test_ts': test_ts}
+                            'params': params, 'history': history, 'correctness': correctness_ts, 'probit': probabilities, 'test_ts': test_ts,
+                            'params_history': {'bs': self.bs_history, 'bq': self.bq_history}}
 
         if plot:
             self.plot(history, last_epoch, step_size, plot)
@@ -43,11 +45,12 @@ class IterativeModel:
         ...
 
 
-    def calc_performance(self, test_ts, predictions):
+    def calc_performance(self, test_ts, predictions, probabilities):
         acc = calc_acc(test_ts[0], predictions)
         conf_matrix = calc_conf_matrix(test_ts[0], predictions)
         q_acc = calc_q_acc(test_ts[0], predictions, test_ts[2])
-        performance = {'acc': acc, 'conf': conf_matrix, 'q_acc': q_acc}
+        RMSE = calc_RMSE(test_ts[0], probabilities)
+        performance = {'acc': acc, 'conf': conf_matrix, 'q_acc': q_acc, 'RMSE': RMSE}
         return performance
 
 
@@ -60,20 +63,29 @@ class IterativeModel:
 
     def plot(self, history, iters, step_size, plot):
         fig = plt.figure()
-        plt.plot(range(iters), history['avg train nll'])
-        plt.plot(np.arange(0, iters, step_size), history['avg test nll'])
-        plt.plot(np.arange(0, iters, step_size), history['avg val nll'])
-        plt.plot(np.arange(0, iters, step_size), history['train acc']/100)
-        plt.plot(np.arange(0, iters, step_size), history['test acc']/100)
-        plt.plot(np.arange(0, iters, step_size), history['val acc']/100)
-        # plt.title('nll and acc')
+        plt.plot(range(iters), history['avg train nll'], label='avg train nll')
+        plt.plot(np.arange(0, iters, step_size), history['avg test nll'], label='avg test nll')
+        plt.plot(np.arange(0, iters, step_size), history['avg val nll'], label='avg val nll')
         plt.xlabel('epoch')
-        plt.legend(['Train nll', 'Test nll', 'Validation nll', 'Train acc', 'Test acc', 'Val acc'])
-        # plt.legend(['Train nll', 'Validation nll', 'Train acc', 'Val acc'])
-        fig.savefig(plot)
+        plt.ylabel('average negative log likelihood')
+        plt.legend()
+        f = plot.split('.')
+        pathname1 = f[0] + '_nll' + '.' + f[1]
+        fig.savefig(pathname1)
         plt.show()
         plt.close()
 
+        fig2 = plt.figure()
+        plt.plot(np.arange(0, iters, step_size), history['train acc']/100, label='train acc')
+        plt.plot(np.arange(0, iters, step_size), history['test acc']/100, label='test acc')
+        plt.plot(np.arange(0, iters, step_size), history['val acc']/100, label='val acc')
+        plt.ylabel('prediction accuracy')
+        plt.xlabel('epoch')
+        plt.legend()
+        pathname2 = f[0] + '_acc' + '.' + f[1]
+        fig2.savefig(pathname2)
+        plt.show()
+        plt.close()
 
     def print_iter_res(self, epoch, train_nll, val_nll, test_nll, train_acc, val_acc, test_acc):
         dp = 3
